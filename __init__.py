@@ -12,10 +12,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "Auto_dataset",
+    "name" : "Prometheus",
     "author" : "J_Orange",
     "description" : "Auto generate realistic rendering dataset",
-    "blender" : (3, 1, 2),
+    "blender" : (3, 2, 1),
     "version" : (0, 0, 1),
     "location" : "",
     "warning" : "",

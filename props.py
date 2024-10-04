@@ -158,7 +158,7 @@ class Movement(PropertyGroup):
                           update=lambda self, context : AmountCheck(self, context, 'MinVel', 'MaxVel', bCheckMax=True), unit='VELOCITY')
     InitialVelVal: FloatProperty(name="Initial Velocity", default=0.0, min=0.0, max=100.0, unit='VELOCITY')
     bRandomVelDir: BoolProperty(name='Random Initial Velocity Direction?', default=True)
-    InitialVelDir: FloatVectorProperty(name="Random Initial Velocity Direction", default=[0, 0, 0])
+    InitialVelDir: FloatVectorProperty(name="Initial Velocity Direction", default=[0, 0, 0])
     Curves: CollectionProperty(type=VelocityCurvesStructure)
     Index: IntProperty(default=0, min=0)
 

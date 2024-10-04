@@ -15,10 +15,10 @@ from . import props
 from .util.opt import *
 
 Blender_version = bpy.app.version
-OptIDName = 'ad.'
-scene_name = 'AD'
+OptIDName = 'pdg.'
+scene_name = 'PDG'
 layer_name = 'MultiTrack'
-Flag = 'AD_Generated'
+Flag = 'PDG_Generated'
 
 class AnnotationProcessor:
     def __init__(
@@ -257,6 +257,8 @@ class OP_MainAction(Opt):
 
     def invoke(self, context, event):
         context.scene.render.use_lock_interface = True
+
+        self.project_root = bpy.path.abspath("//")
 
         self.non_track_source = []
         self.class_list_source = []
@@ -515,7 +517,7 @@ class OP_MainAction(Opt):
         if Annotation_props.bTracking:
             if Annotation_props.bObjectsTrack2D:
                 AP_Tack2D = Track2DAnnotationProcessor(
-                    dir=os.path.join(self.base_path, 'labels_with_ids', self.video_name),
+                    dir=os.path.join(self.project_root, self.base_path, 'labels_with_ids', self.video_name),
                     name='labels_with_ids',
                     file_name=self.video_name,
                     scene=self.scene_track,
@@ -529,7 +531,7 @@ class OP_MainAction(Opt):
         if Annotation_props.bDepth:
             if Annotation_props.bDepth8bit:
                 AP_Depth8bit = Depth8bitAnnotationProcessor(
-                    dir=os.path.join(self.base_path, 'depth_8bit', self.video_name),
+                    dir=os.path.join(self.project_root, self.base_path, 'depth_8bit', self.video_name),
                     name='depth_8bit',
                     file_name=self.video_name,
                     scene=self.scene_track,
@@ -540,7 +542,7 @@ class OP_MainAction(Opt):
 
             if Annotation_props.bDepthRaw:
                 AP_DepthRaw = DepthRawAnnotationProcessor(
-                    dir=os.path.join(self.base_path, 'depth_raw', self.video_name),
+                    dir=os.path.join(self.project_root, self.base_path, 'depth_raw', self.video_name),
                     name='depth_raw',
                     file_name=self.video_name,
                     scene=self.scene_track,
@@ -568,7 +570,7 @@ class OP_MainAction(Opt):
             json.dump(dic, json_file, indent=4)
 
     def BackgroundObjectGenerate(self):
-        self.non_track_col = bpy.data.collections.new('AD_Background')
+        self.non_track_col = bpy.data.collections.new(scene_name + '_Background')
         self.scene_track.collection.children.link(self.non_track_col)
         self.Non_tracks = []
         self.Non_tracks_withPhysics = []
@@ -592,7 +594,7 @@ class OP_MainAction(Opt):
         seed_object = self.seed_video_str + 'Object'
         random.seed(seed_object)
 
-        self.track_col = bpy.data.collections.new('AD_Track')
+        self.track_col = bpy.data.collections.new(scene_name + '_Track')
         self.scene_track.collection.children.link(self.track_col)
 
         Obj_props = self.Props.Obj
@@ -701,7 +703,7 @@ class OP_MainAction(Opt):
 
         if strc:
             for each_strc in strc:
-                Object = each_strc.Object
+                Object = each_strc.Target
 
                 # BaseColor = each_strc.BaseColor
                 MetallicMax = each_strc.MetallicMax
@@ -712,8 +714,8 @@ class OP_MainAction(Opt):
                 SpecularMin = each_strc.SpecularMin
 
                 if obj_ori == Object:
-                    obj_new['bAD_RandomMaterial'] = True
-                    mat_new = bpy.data.materials.new(name= obj_new.name + '_' + 'AD_Random')
+                    obj_new['b' + scene_name + '_RandomMaterial'] = True
+                    mat_new = bpy.data.materials.new(name= obj_new.name + '_' + scene_name + '_Random')
                     mat_new[Flag] = True
                     self.Materials.append(mat_new)
                     if not obj_new.material_slots:
@@ -770,7 +772,7 @@ class OP_MainAction(Opt):
         AreaSizeX = props.AreaSizeX
         AreaSizeY = props.AreaSizeY
 
-        self.light_col = bpy.data.collections.new('AD_Lights')
+        self.light_col = bpy.data.collections.new(scene_name + '_Lights')
         self.scene_track.collection.children.link(self.light_col)
 
         light_type = ['POINT', 'SUN', 'SPOT', 'AREA']
@@ -867,7 +869,7 @@ class OP_MainAction(Opt):
         SensorFit = props.SensorFit
         SensorSize = props.SensorSize
 
-        self.camera_col = bpy.data.collections.new('AD_Cameras')
+        self.camera_col = bpy.data.collections.new(scene_name + '_Cameras')
         self.scene_track.collection.children.link(self.camera_col)
         empty_origin = bpy.data.objects.new('Empty_Origin', None)
         empty_origin.empty_display_type = 'PLAIN_AXES'
@@ -879,7 +881,7 @@ class OP_MainAction(Opt):
         if strc:
             choice = random.choices(strc, k=CameraNumber)
             for col in choice:
-                each_curve = col.Object
+                each_curve = col.Target
                 curve_new : bpy.types.Object = each_curve.copy()
                 curve_new.data = each_curve.data.copy()
                 curve_new.user_clear()
@@ -971,7 +973,7 @@ class OP_MainAction(Opt):
 
         if strc:
             for each_strc in strc:
-                Object = each_strc.Object
+                Object = each_strc.Target
                 Shape = each_strc.Shape
                 Source = each_strc.Source
                 Mass = each_strc.Mass
@@ -1059,7 +1061,7 @@ class OP_MainAction(Opt):
 
         seed_hdri = self.seed_video_str + 'Hdri'
         random.seed(seed_hdri)
-        world = bpy.data.worlds.new('AD_Wolrd')
+        world = bpy.data.worlds.new(scene_name + '_Wolrd')
         world.use_nodes = True
         self.scene_track.world = world
 
@@ -1079,9 +1081,14 @@ class OP_MainAction(Opt):
 
         self.HDRI = []
         Hdri_list = []
+
+        if not os.path.isabs(dir):
+            dir = os.path.join(bpy.path.abspath("//"), dir)
+
         for files in os.listdir(dir):
-            if files.endswith('.exr'):
-                Hdri_list.append(os.path.join(dir, files))
+            if files.endswith(('.exr','hdr')):
+                path = os.path.join(dir, files)
+                Hdri_list.append(path)
 
         try:
             image = bpy.data.images.load(random.choice(Hdri_list))
@@ -1125,7 +1132,7 @@ class OP_MainAction(Opt):
         for each in self.Cameras:
             each: bpy.types.Camera
             each.animation_data_create()
-            each.animation_data.action = bpy.data.actions.new(name='AD_CameraAction')
+            each.animation_data.action = bpy.data.actions.new(name= scene_name + '_CameraAction')
             each.animation_data.action[Flag] = True
             fcurve = each.animation_data.action.fcurves.new(
                 data_path='constraints["Follow Path"].offset_factor'
@@ -1145,13 +1152,13 @@ class OP_MainAction(Opt):
         for each in self.Objects:
             each: bpy.types.Object
             each.animation_data_create()
-            each.animation_data.action = bpy.data.actions.new(name='AD_ObjectAction')
+            each.animation_data.action = bpy.data.actions.new(name= scene_name + '_ObjectAction')
             each.animation_data.action[Flag] = True
 
             if each in choice_objects:
                 self.rigidbody_collection.objects.unlink(each)
                 i = choice_objects.index(each)
-                curve_object = choice_curves[i].Object
+                curve_object = choice_curves[i].Target
                 follow_path = each.constraints.new(type='FOLLOW_PATH')
                 follow_path: bpy.types.FollowPathConstraint
                 follow_path.target = curve_object
@@ -1223,7 +1230,7 @@ class OP_MainAction(Opt):
                     each_AP.PreRenderProcess()
 
                 image_name = file_name.replace('#', '') + str(i).zfill(image_digi)
-                scene.render.filepath = os.path.join(self.image_path, image_name)  # Set save path with frame
+                scene.render.filepath = os.path.join(self.project_root, self.image_path, image_name)  # Set save path with frame
                 bpy.ops.render.render({"scene": scene},
                     scene= scene.name, layer= self.ViewLayer.name, animation=False, write_still=True
                     )
@@ -1260,7 +1267,7 @@ class OP_MainAction(Opt):
         if not self.scene_track.rigidbody_world:
             bpy.ops.rigidbody.world_add({"scene": self.scene_track})
         if not self.scene_track.rigidbody_world.collection:
-            rigidbody_collection = bpy.data.collections.new("AD_RigidBodyWorld")
+            rigidbody_collection = bpy.data.collections.new(scene_name + "_RigidBodyWorld")
             self.rigidbody_collection = rigidbody_collection
             self.scene_track.rigidbody_world.collection = rigidbody_collection
         self.scene_track.rigidbody_world.enabled = True

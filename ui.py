@@ -3,9 +3,9 @@ import bpy
 from bpy.types import Context, Panel
 from . import util, opt
 
-bDebug = True
+bDebug = False
 
-PanelIDPrefix = "AD_UI_PT_"
+PanelIDPrefix = "PDG_UI_PT_"
 Space_Type = "PROPERTIES"
 Region_Type = "WINDOW"
 Panel_Context = "output"
@@ -102,8 +102,8 @@ class P_General(P_Master):
 # Output and render seting will direcly use the blender seting. 
 # If you want to do some changes you should change them in those panels.
 
-    bl_idname = PanelIDPrefix + "AutoDataset"
-    bl_label = "AutoDataset"
+    bl_idname = PanelIDPrefix + "General"
+    bl_label = "Prometheus Dataset Generation"
 
     def __init__(self) -> None:
         super().__init__()
@@ -303,7 +303,10 @@ class P_Camera(P_Master):
         layout = self.layout
 
         layout.label(text=
-        'WARNNING! If you selected curves, will not random generate but choice from this list.'
+        'WARNNING!'
+        )
+        layout.label(text=
+        'If you selected curves, will not random generate.'
         )
         row = layout.row()
         row.template_list(util.ui.UL_SelectedTarget.bl_idname,'UL_Camera',
@@ -432,9 +435,8 @@ class P_Movement(P_Master):
 
         layout = self.layout
 
-        layout.label(text=
-                     'WARNNING! If you selected curves, will not random generate but choice from this list.'
-                     )
+        layout.label(text='WARNNING!')
+        layout.label(text='One random object for each curve.')
         row = layout.row()
         row.template_list(util.ui.UL_SelectedTarget.bl_idname, 'UL_Movement',
                           self.props_movement, 'Curves',

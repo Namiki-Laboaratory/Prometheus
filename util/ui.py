@@ -3,7 +3,7 @@ import bpy
 from . import props
 
 
-UIListIDname = "AD_UI_UL_"
+UIListIDname = "PDG_UI_UL_"
 
 
 def ListCheck(structure:props.BaseUIListStructure, idx, dic_to_find:dict):
